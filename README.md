@@ -1,0 +1,1 @@
+detecting rigged games
