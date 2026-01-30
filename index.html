@@ -11,7 +11,6 @@
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect } = React;
 
@@ -94,21 +93,9 @@
             const spreadDifference = Math.abs(marginAfter + game.spread);
             const wouldHaveMissedBy = Math.abs(marginBefore + game.spread);
             
-            return {
-              finalMargin,
-              marginBefore,
-              marginAfter,
-              wasUnderdog,
-              coveredSpread: didCover,
-              wouldHaveCovered: !wouldNotHaveCovered,
-              impactedSpread: wouldNotHaveCovered && didCover,
-              spreadDifference,
-              wouldHaveMissedBy,
-              suspicionScore: calculateSuspicionScore(game, wouldNotHaveCovered && didCover)
-            };
-          };
+            const impactedSpread = wouldNotHaveCovered && didCover;
 
-          const calculateSuspicionScore = (game, impactedSpread) => {
+            // Compute suspicionScore here to avoid recursion
             let score = 0;
             
             if (game.timeLeft <= 15 && game.deficitBefore >= 10) score += 40;
@@ -120,13 +107,25 @@
             if (game.pointsScored >= 5 && game.timeLeft <= 20) score += 25;
             if (game.pointsScored >= 7 && game.timeLeft <= 30) score += 35;
             
-            const analysis = analyzeSpreadImpact(game);
-            if (analysis.spreadDifference <= 1 && impactedSpread) score += 30;
-            if (analysis.spreadDifference <= 2 && impactedSpread) score += 20;
+            if (spreadDifference <= 1 && impactedSpread) score += 30;
+            if (spreadDifference <= 2 && impactedSpread) score += 20;
             
             if (game.deficitBefore >= 12 && game.timeLeft <= 20) score += 15;
             
-            return Math.min(score, 100);
+            const suspicionScore = Math.min(score, 100);
+
+            return {
+              finalMargin,
+              marginBefore,
+              marginAfter,
+              wasUnderdog,
+              coveredSpread: didCover,
+              wouldHaveCovered: !wouldNotHaveCovered,
+              impactedSpread,
+              spreadDifference,
+              wouldHaveMissedBy,
+              suspicionScore
+            };
           };
 
           useEffect(() => {
